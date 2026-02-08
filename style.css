@@ -1,0 +1,65 @@
+body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #000;
+    display: flex; justify-content: center; align-items: center;
+}
+
+/* New Background - Dark Gradient */
+.bg-custom {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    /* REPLACE URL BELOW WITH YOUR BACKGROUND IMAGE */
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0, 0, 0, 0.8)),
+                url('bg.png');
+
+    background-size: cover;
+    background-position: center;
+    z-index: 1;
+    filter: blur(15px); /* Optional: blurs bg to make modal pop */
+}
+
+/* --- PROFILE ICON STYLE --- */
+.profile-container {
+    width: 90px; height: 90px;
+    margin: -85px auto 20px; /* Pulls it up halfway out of the box */
+    border-radius: 50%;
+    border: 5px solid #fff;
+    overflow: hidden;
+    background: #eee;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.profile-container img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+
+.modal {
+    position: relative; background: #fff; width: 100%; max-width: 360px;
+    border-radius: 11px; padding: 40px 30px; text-align: center;
+    z-index: 10; box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+}
+
+/* Removed .profile-img style */
+
+h2 {
+    font-size: 22px; font-weight: 700; margin: 0 0 15px;
+    color: #161823;
+}
+
+p {
+    font-size: 16px; color: #555; line-height: 1.5; margin-bottom: 35px;
+}
+
+.btn-watch {
+    background-color: #fe2c55; color: #fff; border: none;
+    padding: 16px; width: 100%; border-radius: 8px;
+    font-weight: 530; font-size: 16px; cursor: pointer;
+    margin-bottom: 15px; transition: background 0.2s;
+}
+
+.btn-watch:active { background-color: #e0274a; }
+
+.btn-not-now {
+    background: none; border: none; color: #292929;
+    font-size: 15px; font-weight: 500; cursor: pointer;
+}
